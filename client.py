@@ -27,7 +27,7 @@ client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((IP, PORT))
 client_socket.setblocking(False)
 
-my_username = (f"[{my_username.lower()}]")
+my_username = f"[{my_username.lower()}]"
 
 username = my_username.encode('utf-8')
 username_header = f"{len(username):<{HEADER_LENGTH}}".encode('utf-8')
@@ -36,6 +36,7 @@ client_socket.send(username_header + username)
 prCyan("------------------------------------------------")
 prYellow(my_username + " has connected to the chatroom.")
 prCyan("------------------------------------------------")
+
 
 def sendMsg():
     while True:
@@ -84,6 +85,7 @@ def recvMsg():
 
 t1 = threading.Thread(target=recvMsg, name="t1")
 t2 = threading.Thread(target=sendMsg, name="t2")
+
 
 def main():
     t1.start()
