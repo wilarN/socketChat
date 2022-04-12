@@ -38,52 +38,59 @@ prYellow(my_username + " has connected to the chatroom.")
 prCyan("------------------------------------------------")
 
 def sendMsg():
-    message = input(f"{my_username} > ")
-    # message = ""
+    while True:
+        message = input(f"{my_username} > ")
+        # message = ""
 
-    if message.lower() == 'quit' or message.lower() == 'exit' or message.lower() == 'disconnect' or message.lower() == 'dc' or message.lower() == 'leave':
-        prRed("Left the chat.")
-        exit(1)
+        if message.lower() == 'quit' or message.lower() == 'exit' or message.lower() == 'disconnect' or message.lower() == 'dc' or message.lower() == 'leave':
+            prRed("Left the chat.")
+            sys.exit()
 
-    if message:
-        message = message.encode("utf-8")
-        message_header = f"{len(message):<{HEADER_LENGTH}}".encode("utf-8")
-        client_socket.send(message_header + message)
+        if message:
+            message = message.encode("utf-8")
+            message_header = f"{len(message):<{HEADER_LENGTH}}".encode("utf-8")
+            client_socket.send(message_header + message)
 
 
 def recvMsg():
-    try:
-        while True:
-            # receive stuff yk.
-            username_header = client_socket.recv(HEADER_LENGTH)
-            if not len(username_header):
-                print("Conncetion closed by the server")
+    while True:
+        try:
+            while True:
+                # receive stuff yk.
+                username_header = client_socket.recv(HEADER_LENGTH)
+                if not len(username_header):
+                    print("Conncetion closed by the server")
+                    sys.exit()
+
+                username_length = int(username_header.decode("utf-8").strip())
+                username = client_socket.recv(username_length).decode("utf-8")
+
+                message_header = client_socket.recv(HEADER_LENGTH)
+                message_length = int(message_header.decode("utf-8").strip())
+                message = client_socket.recv(message_length).decode("utf-8")
+
+                print("\n" + username + " > " + message, end="")
+                print("\n" + f"{my_username} > ", end="")
+
+        except IOError as e:
+            if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
+                print('Reading error', str(e))
                 sys.exit()
 
-            username_length = int(username_header.decode("utf-8").strip())
-            username = client_socket.recv(username_length).decode("utf-8")
-
-            message_header = client_socket.recv(HEADER_LENGTH)
-            message_length = int(message_header.decode("utf-8").strip())
-            message = client_socket.recv(message_length).decode("utf-8")
-
-            prGreen(username + " > " + message)
-            # print(f"{username} > {message}")
-
-    except IOError as e:
-        if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
-            print('Reading error', str(e))
+        except Exception as e:
+            print('General Error', str(e))
             sys.exit()
 
-    except Exception as e:
-        print('General Error', str(e))
-        sys.exit()
 
+t1 = threading.Thread(target=recvMsg, name="t1")
+t2 = threading.Thread(target=sendMsg, name="t2")
 
 def main():
-    while True:
-        recvMsg()
-        sendMsg()
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+    print("threads closed.")
 
 
 if __name__ == '__main__':
