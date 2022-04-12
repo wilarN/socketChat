@@ -52,6 +52,16 @@ while True:
 
             print(f"Accepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}")
 
+            '''
+            for client_socket in clients:
+                # Servservrrevr printo magnifiko not working shite im tired.
+                serv_msg = "Serv >> "
+
+                serv_msg = serv_msg.encode("utf-8")
+                message_header = f"{len(serv_msg):<{HEADER_LENGTH}}".encode("utf-8")
+                client_socket.send(message_header + serv_msg)
+            '''
+
         else:
             message = receive_message(notified_socket)
             if message is False:
