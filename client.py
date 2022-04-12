@@ -42,7 +42,7 @@ def sendMsg():
     # message = ""
 
     if message.lower() == 'quit' or message.lower() == 'exit' or message.lower() == 'disconnect' or message.lower() == 'dc' or message.lower() == 'leave':
-        print("Exited")
+        prRed("Left the chat.")
         exit(1)
 
     if message:
