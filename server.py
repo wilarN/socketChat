@@ -34,20 +34,28 @@ def send_command():
             command = input("Server > ")
             # command = ""
 
-            if command.lower() == "help":
-                print("Shows this help message.")
+            if command.lower() == "help" or command.lower() == "/help":
+                print("-----------"
+                      " Help "
+                      "-----------\n"
+                      "- help(/help) --> Shows this help message.\n"
+                      "- kick(/kick) --> Kick a user.\n"
+                      "- ban(/ban) --> Ban a user.\n"
+                      "- stop(/stop) // kill(/kill) // exit(/exit) --> Stop server.\n"
+                      "- all(/all) --> Announcement to all users.\n"
+                      "- ip(/ip) --> Get IP of a user.\n")
             # kick
-            elif command.lower() == "kick":
+            elif command.lower() == "kick" or command.lower() == "/kick":
                 print("Kick someone.")
             # ban
-            elif command.lower() == "ban":
+            elif command.lower() == "ban" or command.lower() == "/ban":
                 print("Ban someone.")
             # smth
-            elif command.lower() == "stop" or command.lower() == "kill" or command.lower() == "exit":
+            elif command.lower() == "stop" or command.lower() == "kill" or command.lower() == "exit" or command.lower() == "/stop" or command.lower() == "/kill" or command.lower() == "/exit":
                 serverActive = False
                 break
             # smth
-            elif command.lower() == "temp2":
+            elif command.lower() == "ip" or command.lower() == "/ip":
                 print("Something.")
 
             elif command.lower().__contains__("/all"):
@@ -138,4 +146,3 @@ def main():
 if __name__ == '__main__':
     serverActive = True
     main()
-
