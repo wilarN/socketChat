@@ -27,6 +27,7 @@ client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((IP, PORT))
 client_socket.setblocking(False)
 
+
 my_username = f"[{my_username.lower()}]"
 
 username = my_username.encode('utf-8')

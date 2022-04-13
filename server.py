@@ -1,10 +1,14 @@
 import socket
 import select
+import sys
 import time
+import threading
 
 HEADER_LENGTH = 10
 
-IP = "192.168.1.72"
+# IP = socket.socket(socket.gethostbyname())
+
+IP = "127.0.0.1"
 PORT = 2434
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -16,9 +20,91 @@ server_socket.listen()
 sockets_list = [server_socket]
 clients = {}
 
+serverActive = False
+
 # ANNOUNCEMENT
 msg = "Welcome to this epic chatroom."
 msg = f'{len(msg):<{HEADER_LENGTH}}' + msg
+
+
+def send_command():
+    global serverActive
+    while serverActive:
+        while True:
+            command = input("Server > ")
+            # command = ""
+
+            if command.lower() == "help":
+                print("Shows this help message.")
+            # kick
+            elif command.lower() == "kick":
+                print("Kick someone.")
+            # ban
+            elif command.lower() == "ban":
+                print("Ban someone.")
+            # smth
+            elif command.lower() == "stop" or command.lower() == "kill" or command.lower() == "exit":
+                serverActive = False
+                break
+            # smth
+            elif command.lower() == "temp2":
+                print("Something.")
+
+            elif command.lower().__contains__("/all"):
+                print("Announced to everyone.")
+                print(command.replace("/all", ""))
+    print("Server Not active exited sendCommandThread")
+
+
+def mainThread():
+    global serverActive
+
+    if serverActive:
+        while True:
+            if serverActive:
+                read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
+
+                for notified_socket in read_sockets:
+                    if notified_socket == server_socket:
+                        client_socket, client_address = server_socket.accept()
+
+                        user = receive_message(client_socket)
+                        if user is False:
+                            continue
+
+                        sockets_list.append(client_socket)
+
+                        clients[client_socket] = user
+
+                        print(
+                            f"Accepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}")
+
+                    else:
+                        message = receive_message(notified_socket)
+                        if message is False:
+                            print(f"Closed connection from {clients[notified_socket]['data'].decode('utf-8')}")
+                            sockets_list.remove(notified_socket)
+                            del clients[notified_socket]
+                            continue
+
+                        user = clients[notified_socket]
+
+                        print(f"Received message from {user['data'].decode('utf-8')}: {message['data'].decode('utf-8')}")
+
+                        for client_socket in clients:
+                            if client_socket != notified_socket:
+                                client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
+
+                for notified_socket in exception_sockets:
+                    sockets_list.remove(notified_socket)
+                    del clients[notified_socket]
+
+            elif not serverActive:
+                print("Server Not active exited mainThread")
+                break
+    else:
+        print("Exiting...")
+        sys.exit()
 
 
 def receive_message(client_socket):
@@ -35,49 +121,19 @@ def receive_message(client_socket):
         return False
 
 
-while True:
-    read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
+# Threads
+mainThread = threading.Thread(target=mainThread, name="mainThread")
+sendThread = threading.Thread(target=send_command, name="sendThread")
 
-    for notified_socket in read_sockets:
-        if notified_socket == server_socket:
-            client_socket, client_address = server_socket.accept()
 
-            user = receive_message(client_socket)
-            if user is False:
-                continue
+def main():
+    sendThread.start()
+    mainThread.start()
+    sendThread.join()
+    mainThread.join()
 
-            sockets_list.append(client_socket)
 
-            clients[client_socket] = user
+if __name__ == '__main__':
+    serverActive = True
+    main()
 
-            print(f"Accepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}")
-
-            '''
-            for client_socket in clients:
-                # Servservrrevr printo magnifiko not working shite im tired.
-                serv_msg = "Serv >> "
-
-                serv_msg = serv_msg.encode("utf-8")
-                message_header = f"{len(serv_msg):<{HEADER_LENGTH}}".encode("utf-8")
-                client_socket.send(message_header + serv_msg)
-            '''
-
-        else:
-            message = receive_message(notified_socket)
-            if message is False:
-                print(f"Closed connection from {clients[notified_socket]['data'].decode('utf-8')}")
-                sockets_list.remove(notified_socket)
-                del clients[notified_socket]
-                continue
-
-            user = clients[notified_socket]
-
-            print(f"Received message from {user['data'].decode('utf-8')}: {message['data'].decode('utf-8')}")
-
-            for client_socket in clients:
-                if client_socket != notified_socket:
-                    client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
-
-    for notified_socket in exception_sockets:
-        sockets_list.remove(notified_socket)
-        del clients[notified_socket]
