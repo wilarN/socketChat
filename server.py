@@ -3,10 +3,9 @@ import select
 import sys
 import time
 import threading
+import os
 
 HEADER_LENGTH = 10
-
-# IP = socket.socket(socket.gethostbyname())
 
 IP = "127.0.0.1"
 PORT = 2434
@@ -27,6 +26,25 @@ msg = "Welcome to this epic chatroom."
 msg = f'{len(msg):<{HEADER_LENGTH}}' + msg
 
 
+def clearTerminal():
+    clearConsole = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+    clearConsole()
+
+    '''
+    global clearstuff
+    if sys.platform.startswith('linux'):
+        clearstuff = lambda: os.system('clear')
+
+    elif sys.platform.startswith('win32'):
+        clearstuff = lambda: os.system('cls')
+
+    elif sys.platform.startswith('freebsd'):
+        clearstuff = lambda: os.system('clear')
+    else:
+        print("Cannot clear terminal on this system yet.")
+    '''
+
+
 def send_command():
     global serverActive
     while serverActive:
@@ -43,7 +61,8 @@ def send_command():
                       "- ban(/ban) --> Ban a user.\n"
                       "- stop(/stop) // kill(/kill) // exit(/exit) --> Stop server.\n"
                       "- all(/all) --> Announcement to all users.\n"
-                      "- ip(/ip) --> Get IP of a user.\n")
+                      "- ip(/ip) --> Get IP of a user.\n"
+                      "- clear(/clear) --> Clear terminal.\n")
             # kick
             elif command.lower() == "kick" or command.lower() == "/kick":
                 print("Kick someone.")
@@ -61,6 +80,10 @@ def send_command():
             elif command.lower().__contains__("/all"):
                 print("Announced to everyone.")
                 print(command.replace("/all", ""))
+
+            elif command.lower() == "clear" or command.lower() == "/clear":
+                clearTerminal()
+
     print("Server Not active exited sendCommandThread")
 
 
@@ -85,7 +108,9 @@ def mainThread():
                         clients[client_socket] = user
 
                         # New connection.
-                        print(f"\nAccepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}", end="")
+                        print(
+                            f"\nAccepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}",
+                            end="")
                         print(f"\nServer > ", end="")
 
                     else:
@@ -98,7 +123,9 @@ def mainThread():
 
                         user = clients[notified_socket]
 
-                        print(f"\n(Received message from {user['data'].decode('utf-8')}): {message['data'].decode('utf-8')}", end="")
+                        print(
+                            f"\n(Received message from {user['data'].decode('utf-8')}): {message['data'].decode('utf-8')}",
+                            end="")
                         print(f"\nServer > ", end="")
 
                         for client_socket in clients:
