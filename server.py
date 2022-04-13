@@ -76,8 +76,9 @@ def mainThread():
 
                         clients[client_socket] = user
 
-                        print(
-                            f"Accepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}")
+                        # New connection.
+                        print(f"\nAccepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}", end="")
+                        print(f"\nServer > ", end="")
 
                     else:
                         message = receive_message(notified_socket)
@@ -89,7 +90,8 @@ def mainThread():
 
                         user = clients[notified_socket]
 
-                        print(f"Received message from {user['data'].decode('utf-8')}: {message['data'].decode('utf-8')}")
+                        print(f"\n(Received message from {user['data'].decode('utf-8')}): {message['data'].decode('utf-8')}", end="")
+                        print(f"\nServer > ", end="")
 
                         for client_socket in clients:
                             if client_socket != notified_socket:
