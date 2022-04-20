@@ -169,7 +169,6 @@ def main():
     sendThread.join()
     mainThread.join()
 
-
 if __name__ == '__main__':
     serverActive = True
     main()
