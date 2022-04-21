@@ -117,6 +117,7 @@ def mainThread():
                         message = receive_message(notified_socket)
                         if message is False:
                             print(f"Closed connection from {clients[notified_socket]['data'].decode('utf-8')}")
+                            print(f"\nServer > ", end="")
                             sockets_list.remove(notified_socket)
                             del clients[notified_socket]
                             continue

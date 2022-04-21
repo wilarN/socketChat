@@ -5,6 +5,7 @@ import time
 import sys
 import threading
 import os
+from sys import platform
 
 
 def prRed(skk): print("\033[91m {}\033[00m".format(skk))
@@ -37,10 +38,38 @@ IP = "127.0.0.1"
 
 PORT = 2434
 
-if os.name in ('nt', 'dos'):
-    prCyan("------------------------------------------------")
+
+def logOutput(msg, logType):
+    # Log
+    if logType == 1:
+        print("\n[ LOG ] " + msg)
+    # Error
+    elif logType == 2:
+        print("\n[ ERROR ] " + msg)
+    # Warning
+    elif logType == 3:
+        print("\n[ WARNING ] " + msg)
+
+
+if platform == "linux":
+    logOutput(msg="Using Linux", logType=1)
+
 else:
-    print("------------------------------------------------")
+    logOutput(msg="Using other OS than Linux", logType=1)
+
+
+def outputPrint(lineBefore, msg, lineAfter):
+    if platform == "linux":
+        if lineBefore: prCyan("------------------------------------------------")
+        prYellow(msg)
+        if lineAfter: prCyan("------------------------------------------------")
+    else:
+        if lineBefore: print("------------------------------------------------")
+        print(msg)
+        if lineAfter: print("------------------------------------------------")
+
+
+outputPrint(True, "", False)
 my_username = input("Username: ")
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((IP, PORT))
@@ -52,14 +81,7 @@ username = my_username.encode('utf-8')
 username_header = f"{len(username):<{HEADER_LENGTH}}".encode('utf-8')
 client_socket.send(username_header + username)
 
-if os.name in ('nt', 'dos'):
-    prCyan("------------------------------------------------")
-    prYellow(my_username + " has connected to the chatroom.")
-    prCyan("------------------------------------------------")
-else:
-    print("------------------------------------------------")
-    print(my_username + " has connected to the chatroom.")
-    print("------------------------------------------------")
+outputPrint(True, f"{my_username} + has connected to the chatroom.", True)
 
 
 def clearTerminal():
