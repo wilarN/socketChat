@@ -102,7 +102,7 @@ def recvMsg():
                 # receive stuff yk.
                 username_header = client_socket.recv(HEADER_LENGTH)
                 if not len(username_header):
-                    print("Conncetion closed by the server")
+                    print("Connection closed by the server")
                     sys.exit()
 
                 username_length = int(username_header.decode("utf-8").strip())
