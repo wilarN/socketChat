@@ -25,6 +25,9 @@ serverActive = False
 msg = "Welcome to this epic chatroom."
 msg = f'{len(msg):<{HEADER_LENGTH}}' + msg
 
+def log_to_file(text_to_log):
+    # Log connections etc to external logfile.
+    pass
 
 def clearTerminal():
     clearConsole = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')
