@@ -25,27 +25,55 @@ serverActive = False
 msg = "Welcome to this epic chatroom."
 msg = f'{len(msg):<{HEADER_LENGTH}}' + msg
 
-def log_to_file(text_to_log):
-    # Log connections etc to external logfile.
-    pass
+globalLogPath = "./logs/globalLogFile.txt"
+usrLogPath = "./logs/usrLogs/"
+
+def createUserLogfile(usr_name):
+    if not os.path.exists(f"./logs/usrLogs/{usr_name}.txt"):
+        usrFile = open(f"./logs/usrLogs/{usr_name}.txt", "x")
+        usrFile.close()
+        usrFile = open(f"./logs/usrLogs/{usr_name}.txt", "w")
+        usrFile.write(f"[-[ {usr_name} LOGFILE ]-]\n--------------------\n")
+        usrFile.close()
+
+
+def globalLogFile():
+    if not os.path.exists("./logs/globalLogFile.txt"):
+        logFile = open("./logs/globalLogFile.txt", "x")
+        logFile.close()
+
+
+def read_from_logfile(path_to_file):
+    if os.path.exists(path_to_file):
+        read_file = open(path_to_file, "r")
+        data = read_file.read()
+        print(data)
+        return data
+
+def write_to_file(text_to_write, path_to_file):
+    if os.path.exists(path_to_file):
+        write_file = open(path_to_file, "w")
+        write_file.write(text_to_write)
+
+
+def logOutput(msg, logType):
+    # Log
+    if logType == 1:
+        # print("\n[ LOG ] " + msg)
+        write_to_file("\n[ LOG ]" + msg, globalLogPath)
+    # Error
+    elif logType == 2:
+        # print("\n[ ERROR ] " + msg)
+        pass
+    # Warning
+    elif logType == 3:
+        # print("\n[ WARNING ] " + msg)
+        pass
+
 
 def clearTerminal():
     clearConsole = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')
     clearConsole()
-
-    '''
-    global clearstuff
-    if sys.platform.startswith('linux'):
-        clearstuff = lambda: os.system('clear')
-
-    elif sys.platform.startswith('win32'):
-        clearstuff = lambda: os.system('cls')
-
-    elif sys.platform.startswith('freebsd'):
-        clearstuff = lambda: os.system('clear')
-    else:
-        print("Cannot clear terminal on this system yet.")
-    '''
 
 
 def send_command():
@@ -115,6 +143,8 @@ def mainThread():
                             f"\nAccepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}",
                             end="")
                         print(f"\nServer > ", end="")
+                        createUserLogfile(user['data'].decode('utf-8'))
+                        logOutput("Created User logfile.", 1)
 
                     else:
                         message = receive_message(notified_socket)
@@ -168,10 +198,18 @@ sendThread = threading.Thread(target=send_command, name="sendThread")
 
 
 def main():
+    if not os.path.exists('./logs'):
+        os.makedirs('./logs')
+    if not os.path.exists('./logs/usrLogs'):
+        os.makedirs('./logs/usrLogs')
+    globalLogFile()
+    # createUserLogfile("test")
+
     sendThread.start()
     mainThread.start()
     sendThread.join()
     mainThread.join()
+
 
 if __name__ == '__main__':
     serverActive = True
