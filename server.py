@@ -37,7 +37,7 @@ def createUserLogfile(usr_name):
         usrFile.close()
 
 
-def globalLogFile():
+def createGlobalLogFile():
     if not os.path.exists("./logs/globalLogFile.txt"):
         logFile = open("./logs/globalLogFile.txt", "x")
         logFile.close()
@@ -64,11 +64,11 @@ def logOutput(msg, logType):
     # Error
     elif logType == 2:
         # print("\n[ ERROR ] " + msg)
-        pass
+        write_to_file("\n[ ERROR ]" + msg, globalLogPath)
     # Warning
     elif logType == 3:
         # print("\n[ WARNING ] " + msg)
-        pass
+        write_to_file("\n[ WARNING ]" + msg, globalLogPath)
 
 
 def clearTerminal():
@@ -79,41 +79,40 @@ def clearTerminal():
 def send_command():
     global serverActive
     while serverActive:
-        while True:
-            command = input("Server > ")
-            # command = ""
+        command = input("Server > ")
+        # command = ""
 
-            if command.lower() == "help" or command.lower() == "/help":
-                print("-----------"
-                      " Help "
-                      "-----------\n"
-                      "- help(/help) --> Shows this help message.\n"
-                      "- kick(/kick) --> Kick a user.\n"
-                      "- ban(/ban) --> Ban a user.\n"
-                      "- stop(/stop) // kill(/kill) // exit(/exit) --> Stop server.\n"
-                      "- all(/all) --> Announcement to all users.\n"
-                      "- ip(/ip) --> Get IP of a user.\n"
-                      "- clear(/clear) --> Clear terminal.\n")
-            # kick
-            elif command.lower() == "kick" or command.lower() == "/kick":
-                print("Kick someone.")
-            # ban
-            elif command.lower() == "ban" or command.lower() == "/ban":
-                print("Ban someone.")
-            # smth
-            elif command.lower() == "stop" or command.lower() == "kill" or command.lower() == "exit" or command.lower() == "/stop" or command.lower() == "/kill" or command.lower() == "/exit":
-                serverActive = False
-                break
-            # smth
-            elif command.lower() == "ip" or command.lower() == "/ip":
-                print("Something.")
+        if command.lower() == "help" or command.lower() == "/help":
+            print("-----------"
+                  " Help "
+                  "-----------\n"
+                  "- help(/help) --> Shows this help message.\n"
+                  "- kick(/kick) --> Kick a user.\n"
+                  "- ban(/ban) --> Ban a user.\n"
+                  "- stop(/stop) // kill(/kill) // exit(/exit) --> Stop server.\n"
+                  "- all(/all) --> Announcement to all users.\n"
+                  "- ip(/ip) --> Get IP of a user.\n"
+                  "- clear(/clear) --> Clear terminal.\n")
+        # kick
+        elif command.lower() == "kick" or command.lower() == "/kick":
+            print("Kick someone.")
+        # ban
+        elif command.lower() == "ban" or command.lower() == "/ban":
+            print("Ban someone.")
+        # smth
+        elif command.lower() == "stop" or command.lower() == "kill" or command.lower() == "exit" or command.lower() == "/stop" or command.lower() == "/kill" or command.lower() == "/exit":
+            serverActive = False
+            break
+        # smth
+        elif command.lower() == "ip" or command.lower() == "/ip":
+            print("Something.")
 
-            elif command.lower().__contains__("/all"):
-                print("Announced to everyone.")
-                print(command.replace("/all", ""))
+        elif command.lower().__contains__("/all"):
+            print("Announced to everyone.")
+            print(command.replace("/all", ""))
 
-            elif command.lower() == "clear" or command.lower() == "/clear":
-                clearTerminal()
+        elif command.lower() == "clear" or command.lower() == "/clear":
+            clearTerminal()
 
     print("Server Not active exited sendCommandThread")
 
@@ -121,61 +120,54 @@ def send_command():
 def mainThread():
     global serverActive
 
-    if serverActive:
-        while True:
-            if serverActive:
-                read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
+    while serverActive == True:
+        read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
 
-                for notified_socket in read_sockets:
-                    if notified_socket == server_socket:
-                        client_socket, client_address = server_socket.accept()
+        for notified_socket in read_sockets:
+            if notified_socket == server_socket:
+                client_socket, client_address = server_socket.accept()
 
-                        user = receive_message(client_socket)
-                        if user is False:
-                            continue
+                user = receive_message(client_socket)
+                if user is False:
+                    continue
 
-                        sockets_list.append(client_socket)
+                sockets_list.append(client_socket)
 
-                        clients[client_socket] = user
+                clients[client_socket] = user
 
-                        # New connection.
-                        print(
-                            f"\nAccepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}",
-                            end="")
-                        print(f"\nServer > ", end="")
-                        createUserLogfile(user['data'].decode('utf-8'))
-                        logOutput("Created User logfile.", 1)
+                # New connection.
+                print(
+                    f"\nAccepted new connection from {client_address[0]}:{client_address[1]} username:{user['data'].decode('utf-8')}",
+                    end="")
+                print(f"\nServer > ", end="")
+                createUserLogfile(user['data'].decode('utf-8'))
+                logOutput("Created User logfile.", 1)
 
-                    else:
-                        message = receive_message(notified_socket)
-                        if message is False:
-                            print(f"Closed connection from {clients[notified_socket]['data'].decode('utf-8')}")
-                            print(f"\nServer > ", end="")
-                            sockets_list.remove(notified_socket)
-                            del clients[notified_socket]
-                            continue
-
-                        user = clients[notified_socket]
-
-                        print(
-                            f"\n(Received message from {user['data'].decode('utf-8')}): {message['data'].decode('utf-8')}",
-                            end="")
-                        print(f"\nServer > ", end="")
-
-                        for client_socket in clients:
-                            if client_socket != notified_socket:
-                                client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
-
-                for notified_socket in exception_sockets:
+            else:
+                message = receive_message(notified_socket)
+                if message is False:
+                    print(f"Closed connection from {clients[notified_socket]['data'].decode('utf-8')}")
+                    print(f"\nServer > ", end="")
                     sockets_list.remove(notified_socket)
                     del clients[notified_socket]
+                    continue
 
-            elif not serverActive:
-                print("Server Not active exited mainThread")
-                break
-    else:
-        print("Exiting...")
-        sys.exit()
+                user = clients[notified_socket]
+
+                print(
+                    f"\n(Received message from {user['data'].decode('utf-8')}): {message['data'].decode('utf-8')}",
+                    end="")
+                print(f"\nServer > ", end="")
+
+                for client_socket in clients:
+                    if client_socket != notified_socket:
+                        client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
+
+        for notified_socket in exception_sockets:
+            sockets_list.remove(notified_socket)
+            del clients[notified_socket]
+
+    print("[2]Server Not active exited mainThread")
 
 
 def receive_message(client_socket):
@@ -202,13 +194,13 @@ def main():
         os.makedirs('./logs')
     if not os.path.exists('./logs/usrLogs'):
         os.makedirs('./logs/usrLogs')
-    globalLogFile()
+    createGlobalLogFile()
     # createUserLogfile("test")
 
     sendThread.start()
     mainThread.start()
-    sendThread.join()
-    mainThread.join()
+    # sendThread.join()
+    # mainThread.join()
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ import errno
 import time
 import sys
 import threading
-import os
+import os, signal
 from sys import platform
 
 
@@ -90,16 +90,22 @@ def clearTerminal():
 
 
 def sendMsg():
-    while True:
+    global active
+    while active:
         message = input(f"{my_username} > ")
         # message = ""
 
         if message.lower() == 'quit' or message.lower() == 'exit' or message.lower() == 'disconnect' or message.lower() == 'dc' or message.lower() == 'leave':
             if os.name in ('nt', 'dos'):
                 prRed("Left the chat.")
+                active = False
+                break
+                os.kill(os.getpid(), signal.SIGINT)
             else:
                 print("Left the chat.")
-            sys.exit()
+                active = False
+                break
+            # sys.exit()
 
         elif message.lower() == "help" or message.lower() == "/help":
             print("-----------"
@@ -118,7 +124,8 @@ def sendMsg():
 
 
 def recvMsg():
-    while True:
+    global active
+    while active:
         try:
             while True:
                 # receive stuff yk.
@@ -152,12 +159,19 @@ t2 = threading.Thread(target=sendMsg, name="t2")
 
 
 def main():
+    global active
     t1.start()
     t2.start()
-    t1.join()
-    t2.join()
-    print("threads closed.")
+    # t1.join()
+    # t2.join()
+    # print("threads closed.")
+    if not active:
+        if os.name in ('nt', 'dos'):
+            os.kill(os.getpid(), signal.SIGINT) 
+        else:
+            os._exit()
 
 
 if __name__ == '__main__':
+    active = True
     main()
