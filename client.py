@@ -162,9 +162,6 @@ def main():
     global active
     t1.start()
     t2.start()
-    # t1.join()
-    # t2.join()
-    # print("threads closed.")
     if not active:
         if os.name in ('nt', 'dos'):
             os.kill(os.getpid(), signal.SIGINT) 

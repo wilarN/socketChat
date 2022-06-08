@@ -120,7 +120,7 @@ def send_command():
 def mainThread():
     global serverActive
 
-    while serverActive == True:
+    while serverActive:
         read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
 
         for notified_socket in read_sockets:
@@ -195,14 +195,12 @@ def main():
     if not os.path.exists('./logs/usrLogs'):
         os.makedirs('./logs/usrLogs')
     createGlobalLogFile()
-    # createUserLogfile("test")
 
     sendThread.start()
     mainThread.start()
-    # sendThread.join()
-    # mainThread.join()
 
 
 if __name__ == '__main__':
     serverActive = True
     main()
+    
